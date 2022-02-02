@@ -1,22 +1,54 @@
 import { Box, Text, TextField, Image, Button } from '@skynexui/components';
+import { createClient } from '@supabase/supabase-js';
 import React from 'react';
 import appConfig from '../config.json';
+
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlhdCI6MTY0MzgyMzIyMiwiZXhwIjoxOTU5Mzk5MjIyfQ.uaO24ycfenCtr2cws3vpzlh9o5hxjvHainBNrQhVWZI';
+const SUPABASE_URL = 'https://qsungbtnbcsiuhopjleu.supabase.co';
+const supabaseClient = createClient (SUPABASE_URL, SUPABASE_ANON_KEY);
+
+const dadosDoSupabase = supabaseClient
+    .from('mensagens')
+    .select('*');
+
 
 export default function ChatPage() {
     const [mensagem,setMensagem] = React.useState('');
     const [listaChat,setListaChat] = React.useState([]);
 
+
+    React.useEffect(() => {
+        supabaseClient
+            .from('mensagens')
+            .select('*')
+            .order('id', {ascending: false})
+            .then(({ data }) => {
+                setListaChat(data);
+
+            });
+    }, [])
+
+
+
     function handleNovaMensagem (novaMensagem) {
         const mensagem ={
             texto: novaMensagem,
             de: 'IzzyAlex',
-            id: listaChat.length,
+            
         }
 
-        setListaChat([ 
-            mensagem,
-            ...listaChat, 
-        ]);    
+        supabaseClient
+            .from('mensagens')
+            .insert([
+                mensagem
+            ])
+            .then (({ data }) =>{
+                setListaChat([ 
+                    data[0],
+                    ...listaChat, 
+                ]); 
+            })
+
         setMensagem('');
     }
 
@@ -123,17 +155,20 @@ function Header() {
 function MessageList(props) {
     
     return (
+        
         <Box
             tag="ul"
             styleSheet={{
-                overflow: 'scroll',
+                overflow: 'auto',
                 display: 'flex',
                 flexDirection: 'column-reverse',
                 flex: 1,
                 color: appConfig.theme.colors.neutrals["000"],
                 marginBottom: '16px',
+
             }}
         >
+
             {props.mensagens.map((mensagem) =>{
                 return (
                 <Text
@@ -161,7 +196,7 @@ function MessageList(props) {
                                 display: 'inline-block',
                                 marginRight: '8px',
                             }}
-                            src={`https://github.com/IzzyAlex.png`}
+                            src={`https://github.com/${mensagem.de}.png`}
                         />
                         <Text tag="strong">
                             {mensagem.de}
