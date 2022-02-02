@@ -71,6 +71,8 @@ export default function PaginaInicial() {
                 <TextField
                 value={username}
                 onChange={function handler(event) {
+                    //PRECISO DESCOBRIR O TAMANHO DE EVENT
+                    console.log(event.type.width);
                     //Onde tá o valor
                     const valor = event.target.value;
                     //Trocar o valor da variavel
